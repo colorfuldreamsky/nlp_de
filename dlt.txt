@@ -1,0 +1,79 @@
+API
+----
+
+counterTrade(@QueryParam("tradeId") tradeId: String,@QueryParam("sellValue") sellValue: Int,@QueryParam("sellCurrency") sellCurrency: String, @QueryParam("longContract") longContract: Int, @QueryParam("counterParty") counterParty: CordaX500Name?,@QueryParam("tradeStatus") tradeStatus: String)
+
+createTrade(@QueryParam("sellValue") sellValue: Int,@QueryParam("sellCurrency") sellCurrency: String, @QueryParam("longContract") longContract: Int, @QueryParam("counterParty") counterParty: CordaX500Name?,@QueryParam("tradeStatus") tradeStatus: String)
+
+
+startTrackedFlow(::Initiator, sellValue, sellCurrency, longContract, tradeStatus, counterParty).returnValue.getOrThrow()
+            Response.status(CREATED).entity("Transaction id ${signedTx.id} committed to ledger.\n")
+
+startFlowDynamic(CounterTradeFlow.CounterInitiator::class.java, sellValue,sellCurrency,tradeStatus,longContract, tradeId,counterParty).returnValue.getOrThrow()
+
+Flow
+----
+
+TradeState(sellValue,sellCurrency,longContract,serviceHub.myInfo.legalIdentities.first(), counterParty,tradeStatus,tradeLinerId)
+
+ class CounterInitiator(
+                    val sellValue: Int,
+                    val sellCurrency: String,
+                    val tradeStatus: String,
+                    val longContract: Int,
+                    val tradeId: String,
+                    val counterParty: Party)
+Trade:					
+ class Initiator(val sellValue: Int,
+                    val sellCurrency: String,
+                    val longContract: Int,
+                    val tradeStatus: String,
+                    val counterParty: Party)					
+					
+Schema
+---
+            @Column(name = "initiatingParty")
+            var initiatingPartyName: String,
+
+            @Column(name = "counterParty")
+            var counterParty: String,
+
+            @Column(name = "sellValue")
+            var sellValue: Int,
+
+            @Column(name = "sellCurrency")
+            var sellCurrency: String,
+
+            @Column(name = "longContract")
+            var longContract: Int,
+
+            @Column(name = "tradeStatus")
+            var tradeStatus: String,
+			
+		    @Column(name = "linear_id")
+		    var linearId: UUID
+			
+			
+constructor(): this("", "", 0,"",0,"", UUID.randomUUID())			
+
+
+State
+---
+
+TradeState(val sellValue: Int,
+                      val sellCurrency: String,
+                      val longContract: Int,
+                      val initiatingParty: Party,
+                      val counterParty: Party,
+                      val tradeStatus: String,
+                      override val linearId: UniqueIdentifier = UniqueIdentifier()):
+
+PersistentTrade(
+                    this.initiatingParty.name.toString(),
+                    this.counterParty.name.toString(),
+                    this.sellValue,
+                    this.sellCurrency.toString(),
+                    this.longContract,
+                    this.tradeStatus,
+                    this.linearId.id
+
